@@ -1,12 +1,5 @@
 - hosts: datanode
-  vars_prompt:
-         - name: dir_name
-           private: no
-           prompt: "Enter the path and directory name for datanode"
-
-         - name: ip
-           private: no
-           prompt: "Enter the ip of master node"
+  
   tasks: 
          - debug:
                  msg: "Hadoop datanode configuration started"
@@ -44,11 +37,11 @@
            command: hadoop-daemon.sh stop datanode
 
          - name: Deleting datanode directory if already exist
-           command: "rm -rf {{ dir_name  }}"
+           command: "rm -rf  /dn1"
 
          - name: Creating namenode directory
            file:
-                   path: "{{ dir_name  }}"
+                   path:  /dn1
                    state: directory
            become: true
 
@@ -59,7 +52,7 @@
                    block:
                         <property>
                         <name>dfs.data.dir</name>
-                        <value>{{ dir_name  }}</value>
+                        <value>/dn1</value>
                         </property>
            become: true
 
@@ -70,7 +63,7 @@
                    block:
                         <property>
                         <name>fs.default.name</name>
-                        <value>hdfs://{{ip}}:9001</value>
+                        <value>hdfs://172.31.11.27:9001</value>
                         </property>
            become: true           
    
