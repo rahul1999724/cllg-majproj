@@ -1,0 +1,103 @@
+- hosts: namenode
+  vars_prompt:
+         - name: dir_name
+           private: no
+           prompt: "Enter the path and directory name for namenode"
+  tasks: 
+         - debug:
+                 msg: "Hadoop namenode configuration started"
+         - name: Downloading jdk software
+           get_url:
+                   url: "https://shracker.tk/jdk-8u171-linux-x64.rpm"
+                   dest: /root
+           become: true
+
+         - name: Downloading hadoop software
+           get_url: 
+                   url: "https://shracker.tk/hadoop-1.2.1-1.x86_64.rpm"
+                   dest: /root
+           become: true
+           
+
+         - name: Installing jdk software
+           yum:
+                 name: "/root/jdk-8u171-linux-x64.rpm"
+                 state: present
+                 disable_gpg_check: yes
+           register: java
+           become: true
+         - debug:
+                var: java.results
+
+         - name: Installing hadoop software
+           command: rpm -i /root/hadoop-1.2.1-1.x86_64.rpm --force
+           register: hadoop
+           become: true
+         - debug:
+                 var: hadoop
+
+         - name: stopping previous namenode services
+           command: hadoop-daemon.sh stop namenode
+
+         - name: Deleting namenode directory if already exist
+           command: "rm -rf {{ dir_name  }}"
+
+         - name: Creating namenode directory
+           file:
+                   path: "{{ dir_name  }}"
+                   state: directory
+           become: true
+
+         - name: Updating hdfs-site.xml file
+           blockinfile:
+                   path: /etc/hadoop/hdfs-site.xml
+                   insertafter: "<configuration>"
+                   block:
+                        <property>
+                        <name>dfs.name.dir</name>
+                        <value>{{ dir_name  }}</value>
+                        </property>
+           become: true
+
+         - name: Updating core-site.xml file
+           blockinfile:
+                   path: /etc/hadoop/core-site.xml
+                   insertafter: "<configuration>"
+                   block:
+                        <property>
+                        <name>fs.default.name</name>
+                        <value>hdfs://0.0.0.0:9001</value>
+                        </property>
+           become: true           
+   
+         - name: Formatting Namenode
+           shell: echo Y | hadoop namenode -format
+           register: format
+           become: true
+         - debug:
+                 var: format
+
+         - name: starting namenode services
+           command: hadoop-daemon.sh start namenode
+           register: name_service
+           become: true
+         - debug: 
+                 var: name_service.stdout
+
+         - name: Checking namenode services
+           command: jps
+           register: jps_service
+           become: true
+
+         - debug:
+                 var: jps_service.stdout
+
+         - debug: 
+                 msg: "Hadoop namenode configured successfully !!!!!"
+
+         - name: hadoop cluster report
+           command: "hadoop dfsadmin -report"
+           register: report
+           become: true
+         - debug:
+                 var: report.stdout_lines

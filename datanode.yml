@@ -1,0 +1,96 @@
+- hosts: datanode
+  vars_prompt:
+         - name: dir_name
+           private: no
+           prompt: "Enter the path and directory name for datanode"
+
+         - name: ip
+           private: no
+           prompt: "Enter the ip of master node"
+  tasks: 
+         - debug:
+                 msg: "Hadoop datanode configuration started"
+         - name: Downloading jdk software
+           get_url:
+                   url: "https://shracker.tk/jdk-8u171-linux-x64.rpm"
+                   dest: /root
+           become: true
+
+         - name: Downloading hadoop software
+           get_url: 
+                   url: "https://shracker.tk/hadoop-1.2.1-1.x86_64.rpm"
+                   dest: /root
+           become: true
+           
+
+         - name: Installing jdk software
+           yum:
+                 name: "/root/jdk-8u171-linux-x64.rpm"
+                 state: present
+                 disable_gpg_check: yes
+           register: java
+           become: true
+         - debug:
+                var: java.results
+
+         - name: Installing hadoop software
+           command: rpm -i /root/hadoop-1.2.1-1.x86_64.rpm --force
+           register: hadoop
+           become: true
+         - debug:
+                 var: hadoop
+
+         - name: stopping previous datanode services
+           command: hadoop-daemon.sh stop datanode
+
+         - name: Deleting datanode directory if already exist
+           command: "rm -rf {{ dir_name  }}"
+
+         - name: Creating namenode directory
+           file:
+                   path: "{{ dir_name  }}"
+                   state: directory
+           become: true
+
+         - name: Updating hdfs-site.xml file
+           blockinfile:
+                   path: /etc/hadoop/hdfs-site.xml
+                   insertafter: "<configuration>"
+                   block:
+                        <property>
+                        <name>dfs.data.dir</name>
+                        <value>{{ dir_name  }}</value>
+                        </property>
+           become: true
+
+         - name: Updating core-site.xml file
+           blockinfile:
+                   path: /etc/hadoop/core-site.xml
+                   insertafter: "<configuration>"
+                   block:
+                        <property>
+                        <name>fs.default.name</name>
+                        <value>hdfs://{{ip}}:9001</value>
+                        </property>
+           become: true           
+   
+         
+
+         - name: starting datanode services
+           command: hadoop-daemon.sh start datanode
+           register: data_service
+           become: true
+         - debug: 
+                 var: data_service.stdout
+
+         - name: Checking datanode services
+           command: jps
+           register: jps_service
+           become: true
+
+         - debug:
+                 var: jps_service.stdout
+
+         - debug: 
+                 msg: "Hadoop datanode configured successfully !!!!!"
+

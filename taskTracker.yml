@@ -1,0 +1,74 @@
+- hosts: tasktracker
+  
+  tasks: 
+         - debug:
+                 msg: "Task Tracker configuration started"
+         - name: Downloading jdk software
+           get_url:
+                   url: "https://shracker.tk/jdk-8u171-linux-x64.rpm"
+                   dest: /root
+           become: true
+
+         - name: Downloading hadoop software
+           get_url: 
+                   url: "https://shracker.tk/hadoop-1.2.1-1.x86_64.rpm"
+                   dest: /root
+           become: true
+           
+
+         - name: Installing jdk software
+           yum:
+                 name: "/root/jdk-8u171-linux-x64.rpm"
+                 state: present
+                 disable_gpg_check: yes
+           register: java
+           become: true
+         - debug:
+                var: java.results
+
+         - name: Installing hadoop software
+           command: rpm -i /root/hadoop-1.2.1-1.x86_64.rpm --force
+           register: hadoop
+           become: true
+         - debug:
+                 var: hadoop
+
+         - name: stopping previous TaskTracker services
+           command: hadoop-daemon.sh stop tasktracker
+
+         - name: Updating mapred-site.xml file
+           blockinfile:
+                   path: /etc/hadoop/mapred-site.xml
+                   insertafter: "<configuration>"
+                   block:
+                        <property>
+                        <name>mapred.job.tracker</name>
+                        <value>172.31.10.217:9002</value>
+                        </property>
+           become: true    
+
+         - name: starting tasktracker  services
+           command: hadoop-daemon.sh start tasktracker
+           register: task_service
+           become: true
+         - debug: 
+                 var: task_service.stdout
+
+         - name: Checking tasktracker services
+           command: jps
+           register: jps_service
+           become: true
+
+         - debug:
+                 var: jps_service.stdout
+
+         - debug: 
+                 msg: "Task Tracker  configured successfully !!!!!"
+
+         - name: computing cluster report
+           command: hadoop job -list-active-trackers
+           register: report
+           become: true
+
+         - debug:
+                 var: report.stdout_lines
