@@ -1,8 +1,5 @@
 - hosts: namenode
-  vars_prompt:
-         - name: dir_name
-           private: no
-           prompt: "Enter the path and directory name for namenode"
+  
   tasks: 
          - debug:
                  msg: "Hadoop namenode configuration started"
@@ -40,11 +37,11 @@
            command: hadoop-daemon.sh stop namenode
 
          - name: Deleting namenode directory if already exist
-           command: "rm -rf {{ dir_name  }}"
+           command: "rm -rf /nn"
 
          - name: Creating namenode directory
            file:
-                   path: "{{ dir_name  }}"
+                   path:  /nn
                    state: directory
            become: true
 
@@ -55,7 +52,7 @@
                    block:
                         <property>
                         <name>dfs.name.dir</name>
-                        <value>{{ dir_name  }}</value>
+                        <value>/nn</value>
                         </property>
            become: true
 
