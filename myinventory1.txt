@@ -1,14 +1,14 @@
 [jobtracker]
-65.2.35.80   ansible_ssh_user=ec2-user   ansible_ssh_private_key_file=/mykey1111.pem
+15.206.128.143  ansible_ssh_user=ec2-user   ansible_ssh_private_key_file=/mykey1111.pem
 
 [tasktracker]
-13.233.96.219   ansible_ssh_user=ec2-user   ansible_ssh_private_key_file=/mykey1111.pem
+15.206.189.176   ansible_ssh_user=ec2-user   ansible_ssh_private_key_file=/mykey1111.pem
 
 
 [namenode]
 
-13.233.91.56   ansible_ssh_user=ec2-user   ansible_ssh_private_key_file=/mykey1111.pem
+52.66.26.101   ansible_ssh_user=ec2-user   ansible_ssh_private_key_file=/mykey1111.pem
 
 [datanode]
 
-13.235.67.56   ansible_ssh_user=ec2-user   ansible_ssh_private_key_file=/mykey1111.pem
+15.206.164.228   ansible_ssh_user=ec2-user   ansible_ssh_private_key_file=/mykey1111.pem
