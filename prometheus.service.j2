@@ -1,0 +1,15 @@
+[Unit]
+Description=prometheus service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=root
+Group=root
+ExecStart=/usr/local/bin/prometheus   --config.file /root/prometheus-2.18.1.linux-amd64/prometheus.yml
+Restart=always
+ExecStop=/usr/local/bin/prometheus   --config.file /root/prometheus-2.18.1.linux-amd64/prometheus.yml
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

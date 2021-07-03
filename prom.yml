@@ -1,0 +1,43 @@
+- hosts: prometheus
+  vars:
+    - version: "2.18.1"
+  tasks:
+    - name: "Downloading prometheus software"
+      unarchive:
+          src: "https://github.com/prometheus/prometheus/releases/download/v{{ version  }}/prometheus-{{ version  }}.linux-amd64.tar.gz"
+          dest: /root
+          remote_src: yes  
+
+
+    - name: "Copy prometheus file to bin"
+      copy:
+          src: "/root/prometheus-{{ version  }}.linux-amd64/prometheus"
+          dest: "/usr/local/bin"
+          remote_src: yes 
+          mode: 0755
+
+    - name: copy conf file
+      template:
+          src: prometheus.yml
+          dest: "/root/prometheus-{{ version  }}.linux-amd64/prometheus.yml"
+
+    - name: Copy systemd service file
+      template:
+          src: prometheus.service.j2
+          dest: /etc/systemd/system/prometheus.service
+
+    - name: reload daemon
+      command: systemctl daemon-reload
+
+
+    - name: "start prometheus service" 
+      service:
+          name: prometheus
+          state: started
+          enabled: yes
+
+    - name: "check if prometheus is accessible"
+      uri:
+        url: http://localhost:9090
+        method: GET
+        status_code: 200
