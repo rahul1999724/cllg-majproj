@@ -1,0 +1,38 @@
+- hosts: node_exporter
+  vars:
+    - version: "1.0.0"
+  tasks:
+    - name: "Downloading node-exporter  software"
+      unarchive:
+          src: "https://github.com/prometheus/node_exporter/releases/download/v{{ version }}/node_exporter-{{ version }}.linux-amd64.tar.gz"
+          dest: /root
+          remote_src: yes  
+
+
+    - name: "Copy node-exporter  file to bin"
+      copy:
+          src: "/root/node_exporter-{{ version }}.linux-amd64/node_exporter"
+          dest: "/usr/local/bin"
+          remote_src: yes 
+          mode: 0755
+
+    - name: Copy systemd service file
+      template:
+          src: node_exporter.service.j2
+          dest: /etc/systemd/system/node_exporter.service
+
+    - name: reload daemon
+      command: systemctl daemon-reload
+
+
+    - name: "start node_exporter service" 
+      service:
+          name: node_exporter
+          state: started
+          enabled: yes
+
+    - name: "check if node_exporter is accessible"
+      uri:
+        url: http://localhost:9100
+        method: GET
+        status_code: 200
