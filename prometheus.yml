@@ -32,8 +32,9 @@ scrape_configs:
     static_configs:
     - targets:
             {% for host in groups['node_exporter'] %}
-              - ['{{ host }}:9100']
-            
+            {% if inventory_hostname != host %}
+              - '{{ host }}:9100'
+            {% endif %}
             {% endfor %}
 
   - job_name: 'node1-docker-service'
