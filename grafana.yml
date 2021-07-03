@@ -1,0 +1,21 @@
+- hosts: prometheus
+  vars:
+    - version: "2.18.1"
+  tasks:
+    - name: Install grafana
+      unarchive:
+        src: "https://dl.grafana.com/oss/release/grafana-8.0.4.linux-amd64.tar.gz"
+        dest: /root
+        remote_src: yes      
+
+    - name: "Grafana server started"
+      service:
+        name: grafana-server
+        enabled: true
+        state: started
+
+    - name: "Check if Grafana is accessible."
+      uri:
+        url: http://localhost:3000
+        method: GET
+        status_code: 200
