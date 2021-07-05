@@ -1,4 +1,4 @@
-- hosts: mgrafana
+- hosts: prometheus
   vars:
     - version: "2.18.1"
   tasks:
